@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<body style="background-color:powderblue;">
+    <script src="https://cdn.jsdelivr.net/npm/luxon/build/global/luxon.min.js"></script>
+    <link href="/dist/css/tabulator_site.css" rel="stylesheet">
+    <script type="text/javascript" src="/dist/js/tabulator.min.js"></script>
+    <div>
+        <h1>Interactive table for highest grossing films</h1>
+        <h2>Stack:</h2>
+        <ul>
+            <li>Python for data collection</li>
+            <li>BeatifulSoup for sites parsing</li>
+            <li>PostgreSQL for data storing during collection</li>
+            <li>JSON for data storing for visualization</li>
+            <li>HTML and JavaScript for visualization</li>
+            <li><a href="https://tabulator.info/">Tabulator</a> library for interactive table creation</li>
+        </ul>
+        <h2>How to use</h2>
+        Scroll the tabel to see more valuse<br>
+        For sorting: Click arrow near the name of column you want to sort by <br>
+        For filtering: in the field below choose the column you want to filter by, the comparison operation (smaller, greater, like, etc.) and the value to compare with.
+    </div>
+    <div>
+        <select id="filter-field" style="width:200pt">
+            <option></option>
+            <option value="release_year">Year of release</option>
+            <option value="title">Title</option>
+            <option value="box_office">Box office revenue</option>
+            <option value="director">Director</option>
+            <option value="country">Country</option>
+        </select>
+
+        <select id="filter-type">
+            <option value="=">=</option>
+            <option value="<"><</option>
+            <option value="<="><=</option>
+            <option value=">">></option>
+            <option value=">=">>=</option>
+            <option value="!=">!=</option>
+            <option value="like">like</option>
+        </select>
+
+        <input id="filter-value" type="text" placeholder="value to filter" style="width:300pt">
+
+        <button id="filter-clear">Clear Filter</button>
+    </div>
+    <div id="film-table"></div>
+    <script type="module">
+        import tabledata from './film_data.json' with { type: 'json' };
+        var fieldEl = document.getElementById("filter-field");
+        var typeEl = document.getElementById("filter-type");
+        var valueEl = document.getElementById("filter-value");
+        function customFilter(data){
+            return data.car && data.rating < 3;
+        }
+
+        function updateFilter(){
+            var filterVal = fieldEl.options[fieldEl.selectedIndex].value;
+            var typeVal = typeEl.options[typeEl.selectedIndex].value;
+
+            var filter = filterVal == "function" ? customFilter : filterVal;
+
+            if(filterVal == "function" ){
+                typeEl.disabled = true;
+                valueEl.disabled = true;
+            }else{
+                typeEl.disabled = false;
+                valueEl.disabled = false;
+            }
+
+            if(filterVal){
+                table.setFilter(filter,typeVal, valueEl.value);
+            }
+        }
+
+        document.getElementById("filter-field").addEventListener("change", updateFilter);
+        document.getElementById("filter-type").addEventListener("change", updateFilter);
+        document.getElementById("filter-value").addEventListener("keyup", updateFilter);
+
+        document.getElementById("filter-clear").addEventListener("click", function(){
+            fieldEl.value = "";
+            typeEl.value = "=";
+            valueEl.value = "";
+
+            table.clearFilter();
+        });
+	    var table = new Tabulator("#film-table", {
+		    height:340, // set height of table to enable virtual DOM
+    		data:tabledata, //load initial data into table
+	    	layout:"fitColumns", //fit columns to width of table (optional)
+		    columns:[ //Define Table Columns
+			    {title:"Year of release", field:"release_year", sorter:"number"},
+    			{title:"Title", field:"title", sorter:"string"},
+                {title:"Box office revenue", field:"box_office", sorter:"number"},
+	    		{title:"Director", field:"director", sorter:"string"},
+		    	{title:"Country", field:"country", sorter:"string"},
+    		],
+	    });
+
+    </script>
+</body>
+</html>
